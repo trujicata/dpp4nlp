@@ -1,7 +1,7 @@
 [tool.poetry]
-name = "pento_template"
+name = "dpp4nlp"
 version = "0.1.0"
-description = "Template for new Python ML projects"
+description = "Differentially Private Embedding Clustering"
 authors = []
 packages = [
     { include = "research" },

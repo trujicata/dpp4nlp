@@ -20,13 +20,14 @@ class RoBERTaModel:
             )
         else:
             self.model = torch.load(f"text_encoder/roberta/weights/{model_name}.pt")
+            self.model.eval()
             self.tokenizer = RobertaTokenizer.from_pretrained(
                 f"text_encoder/roberta/weights/{model_name}_tokenizer"
             )
 
     def encode(self, text: str, pooling: str = "cls"):
         tokenized_text = self.tokenizer(
-            text, return_tensors="pt", padding=True, truncation=True
+            text, return_tensors="pt", padding=False, truncation=True
         )
         embeddings = self.model(**tokenized_text).last_hidden_state
         if pooling == "cls":
