@@ -15,7 +15,7 @@ ds.to_csv("data/News_Category_Dataset_v3.csv", index=False)
 # %%
 # Now, create a new dataset with only 50 rows
 
-ds_50 = ds.head(50)
+ds_50 = ds.head(3000)
 ds_50.head()
 # %%
 # Save in a csv file

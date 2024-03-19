@@ -14,21 +14,25 @@ ds.head()
 roberta_model = RoBERTaModel()
 
 # %%
+from tqdm import tqdm
 # Encode the short description column of the dataset and save it in a new column
 embedding_list = []
 
-for i, row in ds.iterrows():
+for i, row in tqdm(ds.iterrows()):
     embedding = roberta_model.encode(row["short_description"])
+    embedding = embedding.detach().numpy()
     embedding_list.append(embedding)
 
 # %%
-# Save the embeddings as a torch tensor
-embeddings_tensor = torch.cat(embedding_list)
-torch.save(embeddings_tensor, "data/embeddings_tensor_50.pt")
+import numpy as np
 
+embeddings_matrix = np.array(embedding_list)
+embeddings_matrix=embeddings_matrix.squeeze(1)
+print(embeddings_matrix.shape)
+np.save(embeddings_matrix,"/Users/dima/Documents/dpp4nlp/data/embeddings_tensor_50.npy")
 # %%
 # Visualize the embeddings with tensorboard
 writer = SummaryWriter("runs/roberta_embeddings_50")
-writer.add_embedding(embeddings_tensor, metadata=ds["category"])
+writer.add_embedding(embeddings_matrix, metadata=ds["category"])
 
 # %%
