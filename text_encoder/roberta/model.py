@@ -6,13 +6,14 @@ from transformers import RobertaModel, RobertaTokenizer
 class RoBERTaModel:
     def __init__(self, model_name: str = "roberta-base"):
 
-        if (
-            os.path.exists(f"text_encoder/roberta/weights/{model_name}.pt") == False
-            or os.path.exists(f"text_encoder/roberta/weights/{model_name}_tokenizer")
-            == False
-        ):
+        if not os.path.exists(
+            f"text_encoder/roberta/weights/{model_name}.pt"
+        ) or not os.path.exists(f"text_encoder/roberta/weights/{model_name}_tokenizer"):
             self.model = RobertaModel.from_pretrained(model_name)
             self.tokenizer = RobertaTokenizer.from_pretrained(model_name)
+
+            os.makedirs("text_encoder/roberta/weights", exist_ok=True)
+
             torch.save(self.model, f"text_encoder/roberta/weights/{model_name}.pt")
             self.tokenizer.save_pretrained(
                 f"text_encoder/roberta/weights/{model_name}_tokenizer"
