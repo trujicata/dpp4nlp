@@ -29,7 +29,7 @@ import numpy as np
 embeddings_matrix = np.array(embedding_list)
 embeddings_matrix=embeddings_matrix.squeeze(1)
 print(embeddings_matrix.shape)
-np.save(embeddings_matrix,"/Users/dima/Documents/dpp4nlp/data/embeddings_tensor_50.npy")
+np.save("/Users/dima/Documents/dpp4nlp/data/embeddings_tensor_50.npy",embeddings_matrix)
 # %%
 # Visualize the embeddings with tensorboard
 writer = SummaryWriter("runs/roberta_embeddings_50")

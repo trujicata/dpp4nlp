@@ -1,4 +1,5 @@
 import numpy as np
+from diffprivlib.mechanisms import Exponential
 
 def similarity(u, v):
     dot_product_uv = np.dot(u, v)
@@ -16,20 +17,29 @@ def kernel_matrix(data):
             K[i, j] = similarity(data[i], data[j])
     return K
 
-def select_eigenvectors(eigenvalues, eigenvectors):
+def select_eigenvectors(eigenvalues, eigenvectors, n, dp=True):
     selected_eigenvalues = []
     selected_eigenvectors = []
-
+    if dp:
+        eps = np.abs(np.log(n) - np.log(n - 1))        
     for eigenvalue, eigenvector in zip(eigenvalues, eigenvectors.T):
-        prob = eigenvalue / (eigenvalue + 1)
-        if np.random.rand() < prob:
-            selected_eigenvalues.append(eigenvalue)
-            selected_eigenvectors.append(eigenvector)
+        if dp:
+            p = np.log(eigenvalue) if not np.isnan(np.log(eigenvalue)) else -100
+            bin_mech = Exponential(epsilon=2*eps, sensitivity=eps, utility=[0, p])
+            prob = bin_mech.randomise()
+            if np.random.rand() < prob:
+                selected_eigenvalues.append(eigenvalue)
+                selected_eigenvectors.append(eigenvector)
+        else:
+            prob = eigenvalue / (eigenvalue + 1)
+            if np.random.rand() < prob:
+                selected_eigenvalues.append(eigenvalue)
+                selected_eigenvectors.append(eigenvector)
     
     return np.array(selected_eigenvalues), np.array(selected_eigenvectors).T
 
 
-def select_items(eigenvectors, items):
+def select_items(eigenvectors, items, idxs=True):
     subset_Y = []
 
     for eigenvector in eigenvectors.T:
@@ -37,12 +47,15 @@ def select_items(eigenvectors, items):
         squared_magnitude = np.square(np.abs(eigenvector))
 
         # Normalize squared magnitudes to probabilities
-        probabilities = squared_magnitude / np.sum(squared_magnitude)
+        # probabilities = squared_magnitude / np.sum(squared_magnitude)
 
         # Select an item based on probabilities
-        selected_index = np.random.choice(len(eigenvector), p=probabilities)
-        selected_item = items[selected_index]
-        subset_Y.append(selected_item)
+        selected_index = np.random.choice(len(eigenvector), p=squared_magnitude)
+        if idxs:
+            subset_Y.append(selected_index)
+        else:
+            selected_item = items[selected_index]
+            subset_Y.append(selected_item)
     
     return subset_Y
 
