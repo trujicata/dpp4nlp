@@ -17,16 +17,22 @@ def kernel_matrix(data):
             K[i, j] = similarity(data[i], data[j])
     return K
 
+# TODO: this is relatively final, so Jack needs to check that DP is legit and we are done
 def select_eigenvectors(eigenvalues, eigenvectors, n, dp=True):
     selected_eigenvalues = []
     selected_eigenvectors = []
+    alpha = 1
+    sigma = 1e-6
     if dp:
         eps = np.abs(np.log(n) - np.log(n - 1))        
     for eigenvalue, eigenvector in zip(eigenvalues, eigenvectors.T):
         if dp:
-            p = np.log(eigenvalue) if not np.isnan(np.log(eigenvalue)) else -100
-            bin_mech = Exponential(epsilon=2*eps, sensitivity=eps, utility=[0, p])
-            prob = bin_mech.randomise()
+            # bin_exp actually decides only on the coin flip, the probability itself is unaffected
+            bin_mech = Exponential(epsilon=2*eps, sensitivity=eps, utility=[0, eigenvalue])
+            # now we actually calculate the prob
+            prob = np.exp(alpha * np.log(eigenvalue + sigma)) / (np.exp(alpha * np.log(eigenvalue + sigma)) + 1)
+            print(prob)
+            prob = prob * bin_mech.randomise()
             if np.random.rand() < prob:
                 selected_eigenvalues.append(eigenvalue)
                 selected_eigenvectors.append(eigenvector)
