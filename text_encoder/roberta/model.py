@@ -1,4 +1,3 @@
-import os
 from typing import Sequence, Dict
 
 
@@ -6,34 +5,27 @@ import torch
 import torch.nn.functional as F
 import numpy as np
 from torch import Tensor
-from transformers import AutoTokenizer, AutoModel, RobertaModel, RobertaTokenizer
+from transformers import AutoTokenizer, AutoModel
 
 
-class RoBERTaModel:
-    def __init__(self, model_name: str = "roberta-base"):
+class TextEncoder:
+    def __init__(self, model_name: str, max_tokens: int = 512):
+        self.model = AutoModel.from_pretrained(model_name)
+        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
+        self.max_tokens = max_tokens
+        self.model.eval()
 
-        if not os.path.exists(
-            f"text_encoder/roberta/weights/{model_name}.pt"
-        ) or not os.path.exists(f"text_encoder/roberta/weights/{model_name}_tokenizer"):
-            self.model = RobertaModel.from_pretrained(model_name)
-            self.tokenizer = RobertaTokenizer.from_pretrained(model_name)
+    def encode(self, texts: Sequence[str], pooling: str = "cls"):
+        raise NotImplementedError
 
-            os.makedirs("text_encoder/roberta/weights", exist_ok=True)
 
-            torch.save(self.model, f"text_encoder/roberta/weights/{model_name}.pt")
-            self.tokenizer.save_pretrained(
-                f"text_encoder/roberta/weights/{model_name}_tokenizer"
-            )
-        else:
-            self.model = torch.load(f"text_encoder/roberta/weights/{model_name}.pt")
-            self.model.eval()
-            self.tokenizer = RobertaTokenizer.from_pretrained(
-                f"text_encoder/roberta/weights/{model_name}_tokenizer"
-            )
+class RoBERTaModel(TextEncoder):
+    def __init__(self):
+        super().__init__("roberta-base")
 
-    def encode(self, text: str, pooling: str = "cls"):
+    def encode(self, texts: Sequence[str], pooling: str = "cls") -> Tensor:
         tokenized_text = self.tokenizer(
-            text, return_tensors="pt", padding=False, truncation=True
+            texts, return_tensors="pt", padding=False, truncation=True
         )
         embeddings = self.model(**tokenized_text).last_hidden_state
         if pooling == "cls":
@@ -43,14 +35,9 @@ class RoBERTaModel:
         return pooled_output
 
 
-class SFREmbedding:
+class SFREmbedding(TextEncoder):
     def __init__(self):
-        self.model = AutoModel.from_pretrained("Salesforce/SFR-Embedding-Mistral")
-        self.tokenizer = AutoTokenizer.from_pretrained(
-            "Salesforce/SFR-Embedding-Mistral"
-        )
-
-        self.max_length = 4096
+        super().__init__("Salesforce/SFR-Embedding-Mistral", 4096)
 
     def last_token_pool(
         self, last_hidden_states: Tensor, attention_mask: Tensor
@@ -86,14 +73,9 @@ class SFREmbedding:
             return embeddings
 
 
-class MXBai:
+class MXBai(TextEncoder):
     def __init__(self):
-        self.model = AutoModel.from_pretrained("mixedbread-ai/mxbai-embed-large-v1")
-        self.tokenizer = AutoTokenizer.from_pretrained(
-            "mixedbread-ai/mxbai-embed-large-v1"
-        )
-
-        self.max_length = 4096
+        super().__init__("mixedbread-ai/mxbai-embed-large-v1", 4096)
 
     # The model works really well with cls pooling (default) but also with mean poolin.
     def pooling(
@@ -109,9 +91,11 @@ class MXBai:
             raise NotImplementedError
         return outputs.detach().cpu()
 
-    def encode(self, texts: Sequence[str]):
+    def encode(self, texts: Sequence[str], pooling: str = "cls") -> Tensor:
+        texts = f"Identify the topic or theme of the given text: {texts}"
+
         inputs = self.tokenizer(texts, padding=True, return_tensors="pt")
-        outputs = self.model(**inputs).last_hidden_state
-        embeddings = self.pooling(outputs, inputs, "cls")
+        outputs = self.model(inputs["input_ids"]).last_hidden_state
+        embeddings = self.pooling(outputs, inputs, pooling)
 
         return F.normalize(embeddings, p=2, dim=1)
