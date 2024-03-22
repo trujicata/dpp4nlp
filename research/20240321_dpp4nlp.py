@@ -11,15 +11,16 @@ analysis = DPP4NLP(model=MXBai())
 
 # %%
 dataframe = pd.read_csv("data/News_Category_Dataset_v3_50.csv")
-dataframe.head()
+dataframe.head(3000)
 
 # %%
 x_dataframe = dataframe[["headline", "short_description"]]
 x_dataframe.head()
 # %%
 y = dataframe["category"].tolist()
-y[:5]
+y[:3000]
 # %%
-analysis.get_representative_embeddings(x_dataframe, sample=3, y=y)
+analysis.dp = True
+analysis.get_representative_embeddings(x_dataframe, sample=3000, y=y)
 
 # %%

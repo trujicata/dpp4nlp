@@ -73,7 +73,8 @@ def select_eigenvectors(
     sigma = 1e-6
     for eigenvalue, eigenvector in zip(eigenvalues, eigenvectors.T):
         if dp:
-            eps = np.abs(np.log(n) - np.log(n - 1))
+            eps = np.log(1 / sigma)
+            # eps = np.abs(np.log(n) - np.log(n - 1))
             # bin_exp actually decides only on the coin flip, the probability itself is unaffected
             bin_mech = Exponential(
                 epsilon=2 * eps, sensitivity=eps, utility=[0, eigenvalue]
@@ -86,6 +87,18 @@ def select_eigenvectors(
             if np.random.rand() < prob:
                 selected_eigenvalues.append(eigenvalue)
                 selected_eigenvectors.append(eigenvector)
+            # eps = np.abs(np.log(n) - np.log(n - 1))
+            # prob = np.exp(alpha * np.log(eigenvalue + sigma)) / (
+            #     np.exp(alpha * np.log(eigenvalue + sigma)) + 1
+            # )
+            # if np.random.rand() < prob:
+            #     bin_mech = Exponential(
+            #     epsilon=2 * eps, sensitivity=eps, utility=[0, eigenvalue]
+            #     )
+            #     prob = prob * bin_mech.randomise()
+            #     if prob > 0:
+            #         selected_eigenvalues.append(eigenvalue)
+            #         selected_eigenvectors.append(eigenvector)
         else:
             prob = eigenvalue / (eigenvalue + 1)
             if np.random.rand() < prob:
