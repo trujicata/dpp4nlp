@@ -47,7 +47,7 @@ tokenizer = RobertaTokenizer.from_pretrained(
 )
 
 # %%
-from text_encoder.roberta.model import RoBERTaModel
+from text_encoder.models import RoBERTaModel
 
 roberta = RoBERTaModel()
 

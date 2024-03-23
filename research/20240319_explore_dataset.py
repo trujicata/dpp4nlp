@@ -6,13 +6,13 @@ import numpy as np
 from tqdm import tqdm
 import matplotlib.pyplot as plt
 
-from text_encoder.roberta.model import RoBERTaModel, SFREmbedding, MXBai
+from text_encoder.models import RoBERTaModel, SFREmbedding, MXBai
 
 # %%
-dataset_path = "../data/News_Category_Dataset_v3.json"
+dataset_path = "data/News_Category_Dataset_v3_50.csv"
 
 # Open json into a pandas dataframe
-df = pd.read_json(dataset_path, lines=True)
+df = pd.read_csv(dataset_path)
 df
 # %%
 category_counts = df.value_counts("category")
@@ -35,7 +35,7 @@ mxbai
 # %%
 # %%
 # Sample 1000 articles from the dataset
-sample = df.sample(3000)
+sample = df.sample(49)
 sample
 
 

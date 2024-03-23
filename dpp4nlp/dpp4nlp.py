@@ -8,7 +8,7 @@ from dpp.dpp_algorithm import (
     select_indexes,
 )
 from dpp.utils import get_metrics, show_eigenvalues
-from text_encoder.roberta.model import TextEncoder
+from text_encoder.models import TextEncoder
 
 
 class DPP4NLP:

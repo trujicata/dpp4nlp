@@ -4,7 +4,7 @@ import torch
 
 import pandas as pd
 
-from text_encoder.roberta.model import RoBERTaModel
+from text_encoder.models import RoBERTaModel
 from torch.utils.tensorboard import SummaryWriter
 
 # %%
@@ -15,6 +15,7 @@ roberta_model = RoBERTaModel()
 
 # %%
 from tqdm import tqdm
+
 # Encode the short description column of the dataset and save it in a new column
 embedding_list = []
 
@@ -27,9 +28,11 @@ for i, row in tqdm(ds.iterrows()):
 import numpy as np
 
 embeddings_matrix = np.array(embedding_list)
-embeddings_matrix=embeddings_matrix.squeeze(1)
+embeddings_matrix = embeddings_matrix.squeeze(1)
 print(embeddings_matrix.shape)
-np.save("/Users/dima/Documents/dpp4nlp/data/embeddings_tensor_50.npy",embeddings_matrix)
+np.save(
+    "/Users/dima/Documents/dpp4nlp/data/embeddings_tensor_50.npy", embeddings_matrix
+)
 # %%
 # Visualize the embeddings with tensorboard
 writer = SummaryWriter("runs/roberta_embeddings_50")

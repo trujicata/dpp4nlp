@@ -4,7 +4,7 @@ import start  # noqa
 import pandas as pd
 
 from dpp4nlp.dpp4nlp import DPP4NLP
-from text_encoder.roberta.model import RoBERTaModel, MXBai
+from text_encoder.models import RoBERTaModel, MXBai
 
 # %%
 analysis = DPP4NLP(model=MXBai())
